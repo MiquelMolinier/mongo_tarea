@@ -1,0 +1,1 @@
+EJECUTAR mongod antes de correr la aplicación

@@ -1,0 +1,31 @@
+//#1-Muestra los usuarios que comentaron sin repetirlos
+db.usuario.find({_id:{$in:(db.comentario.distinct("id_usuario"))}});
+//#2-Mostrar las noticias con comentarios
+db.noticia.find({_id:{$in:(db.comentario.distinct("id_noticia"))}});
+//#3-Cantidad de comentarios por autor
+db.comentario.aggregate([{$group:{_id:{id_usuario:"$id_usuario",},"Numero de comentarios":{$sum:1}}},{$sort:{"Numero de comentarios":-1}}]);
+//#4-Cantidad de tags por noticia
+db.noticia.aggregate([{$unwind:"$tags"},{$group:{_id:{id:"$_id",Titulo:"$titulo"}, "Numero de tags":{$sum:1}}},{$sort:{"Numero de tags":-1}}]);
+//#5-Mostrar el autor más activo en comentarios con sus datos personales
+db.usuario.findOne({_id:(db.comentario.aggregate([{$group:{_id:"$id_usuario","Numero de comentarios":{$sum:1}}},{$sort:{"Numero de comentarios":-1}}]).next()._id)});
+//#6-Mostrar el autor con más publicaciones
+db.usuario.findOne({_id:(db.usuario.aggregate([{$unwind:"$articulos"},{$group:{_id:"$_id","Articulos":{$sum:1}}},{$sort:{"Articulos":-1}}]).next()._id)});
+//#7-Mostrar el autor menos activo en comentarios con sus datos personales
+db.usuario.findOne({_id:(db.comentario.aggregate([{$group:{_id:"$id_usuario","Numero de comentarios":{$sum:1}}},{$sort:{"Numero de comentarios":1}}]).next()._id)});
+//#8-Mostrar el autor con menos publicaciones
+db.usuario.findOne({_id:(db.usuario.aggregate([{$unwind:"$articulos"},{$group:{_id:"$_id","Articulos":{$sum:1}}},{$sort:{"Articulos":1}}]).next()._id)});
+//#9-Mostrar los tags
+db.noticia.distinct("tags").length;
+//#10-Mostrar la cantidad de tags
+db.noticia.aggregate([{$unwind:"$tags"},{$group:{_id:"$tags"}},{$count:"numero de tags"}]).next()["numero de tags"];
+//#11-Mostrar los autores con publicaciones
+db.usuario.find({articulos:{$not:{$size:0}}},{_id:1,articulos:1});
+//#12-Mostrar la cantidad de autores con publicaciones
+db.usuario.find({articulos:{$not:{$size:0}}},{_id:1,articulos:1}).count();
+db.usuario.aggregate([{$match:{articulos:{$not:{$size:0}}}},{$count:"Numero de autores"}]).next()["Numero de autores"];
+//#13-Mostrar cantidad de autores
+db.usuario.countDocuments({});
+//#14-Mostrar la cantidad de comentarios
+db.comentario.countDocuments({});
+//#15-Mostrar numero de comentarios por noticia
+db.noticia.aggregate([{$unwind:"$comentarios"},{$group:{_id:{id:"$_id",Titulo:"$titulo"}, "Numero de comentarios":{$sum:1}}}]);
